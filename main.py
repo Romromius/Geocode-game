@@ -3,6 +3,7 @@ from io import BytesIO
 import requests
 from PIL import Image
 import pygame
+import speaker
 
 with open('cities', 'r', encoding='UTF-8') as f:
     cities = f.read().split('\n')
@@ -18,7 +19,11 @@ def get_fragment(toponym_to_find):
         "geocode": toponym_to_find,
         "format": "json"}
 
-    response = requests.get(geocoder_api_server, params=geocoder_params)
+    try:
+        response = requests.get(geocoder_api_server, params=geocoder_params)
+    except requests.exceptions.ConnectionError:
+        speaker.Speaker().say('bad beep', 'error', 'no net')
+        quit('No net')
 
     if not response:
         quit(code='I have no response')
@@ -158,8 +163,8 @@ def level(time, track):
             if event.type == pygame.KEYDOWN:
                 return
             if event.type == fail_event:
+                speaker.Speaker().say('bad beep', 'taunt')
                 window.fill('red')
-                pygame.mixer.Sound('music/0.mp3').play()
                 pygame.mixer.music.load('music/loose.mp3')
                 pygame.mixer.music.play()
                 while True:
